@@ -5,56 +5,129 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>165 BPM Running Music Player</title>
   <style>
+    * { box-sizing: border-box; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      max-width: 600px;
-      margin: 20px auto;
-      padding: 0 15px;
-      background-color: #f5f5f7;
-      color: #333;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 20px 15px;
+      background-color: #f2f2f7;
+      color: #1c1c1e;
     }
-    h1 { text-align: center; color: #1d1d1f; }
-    .player-card {
-      background: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    h1 {
+      text-align: center;
+      font-size: 1.5rem;
       margin-bottom: 20px;
+      color: #1c1c1e;
+    }
+    .player-card {
+      background: #ffffff;
+      padding: 25px 20px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+      margin-bottom: 25px;
       text-align: center;
     }
     .track-title {
-      font-size: 1.1rem;
-      font-weight: bold;
-      margin-bottom: 15px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 20px;
       word-break: break-all;
+      min-height: 2.8em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #000;
     }
-    audio { width: 100%; margin-top: 10px; }
-    .playlist-container {
-      background: #fff;
-      border-radius: 12px;
-      padding: 15px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    
+    /* 播放控制介面 */
+    .controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px;
     }
-    ul { list-style: none; padding: 0; margin: 0; }
-    li {
-      padding: 12px 10px;
-      border-bottom: 1px solid #eee;
+    .btn {
+      background: #f0f0f5;
+      border: none;
+      border-radius: 50%;
+      width: 46px;
+      height: 46px;
+      font-size: 1.1rem;
       cursor: pointer;
       display: flex;
       align-items: center;
-      transition: background 0.2s;
+      justify-content: center;
+      transition: all 0.2s ease;
+      color: #3a3a3c;
     }
-    li:last-child { border-bottom: none; }
-    li:hover { background-color: #f0f0f5; }
+    .btn:active { transform: scale(0.92); }
+    .btn.active {
+      background: #007aff;
+      color: #fff;
+    }
+    .btn-main {
+      width: 60px;
+      height: 60px;
+      font-size: 1.5rem;
+      background: #007aff;
+      color: #fff;
+    }
+    
+    /* 進度條與時間顯示 */
+    .progress-container {
+      margin-top: 15px;
+    }
+    .time-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: #8e8e93;
+      margin-top: 6px;
+    }
+    input[type="range"] {
+      width: 100%;
+      accent-color: #007aff;
+      cursor: pointer;
+    }
+
+    /* 播放列表 */
+    .playlist-container {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    }
+    .playlist-header {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #1c1c1e;
+    }
+    ul { list-style: none; padding: 0; margin: 0; max-height: 300px; overflow-y: auto; }
+    li {
+      padding: 12px 14px;
+      border-radius: 10px;
+      margin-bottom: 4px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background 0.15s;
+      color: #3a3a3c;
+    }
+    li:hover { background-color: #f2f2f7; }
     li.active {
-      font-weight: bold;
+      font-weight: 600;
       color: #007aff;
-      background-color: #eef6ff;
+      background-color: #e5f1ff;
     }
   </style>
-  
-  <!-- 引入你的播放清單檔，加上時間戳避免手機強烈快取 -->
-  <script src="playlist.js?v=1"></script>
+
+  <!-- 引入歌單 JavaScript 檔 -->
+  <script src="playlist.js?v=2"></script>
 </head>
 <body>
 
@@ -62,11 +135,29 @@
 
   <div class="player-card">
     <div id="currentTrack" class="track-title">請選擇歌曲播放</div>
-    <audio id="audioPlayer" controls preload="metadata"></audio>
+    
+    <div class="controls">
+      <button id="shuffleBtn" class="btn" title="隨機播放">🔀</button>
+      <button id="prevBtn" class="btn" title="上一首">⏮️</button>
+      <button id="playPauseBtn" class="btn btn-main" title="播放/暫停">▶️</button>
+      <button id="nextBtn" class="btn" title="下一首">⏭️</button>
+      <button id="repeatBtn" class="btn" title="循環模式">🔁</button>
+    </div>
+
+    <div class="progress-container">
+      <input type="range" id="progressBar" value="0" min="0" max="100" step="0.1">
+      <div class="time-info">
+        <span id="currentTime">0:00</span>
+        <span id="durationTime">0:00</span>
+      </div>
+    </div>
+
+    <!-- 隱藏原生音訊標籤，使用客製化 UI 操控 -->
+    <audio id="audioPlayer" preload="metadata"></audio>
   </div>
 
   <div class="playlist-container">
-    <h3>播放列表</h3>
+    <div class="playlist-header">播放列表</div>
     <ul id="playlistView"></ul>
   </div>
 
@@ -74,72 +165,181 @@
     const audio = document.getElementById('audioPlayer');
     const trackTitle = document.getElementById('currentTrack');
     const playlistView = document.getElementById('playlistView');
+    
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const shuffleBtn = document.getElementById('shuffleBtn');
+    const repeatBtn = document.getElementById('repeatBtn');
+    
+    const progressBar = document.getElementById('progressBar');
+    const currentTimeEl = document.getElementById('currentTime');
+    const durationTimeEl = document.getElementById('durationTime');
 
     let currentIndex = 0;
+    let isShuffle = false;
+    let repeatMode = 0; // 0: 歌單循環 (ALL), 1: 單曲循環 (ONE), 2: 不循環 (OFF)
 
-    // 1. 初始化檢查 playlist 陣列是否存在
+    // 1. 初始化檢查
     if (typeof playlist === 'undefined' || !Array.isArray(playlist) || playlist.length === 0) {
       trackTitle.innerText = "❌ 找不到 playlist.js 或歌單為空！";
     } else {
       renderPlaylist();
+      loadTrack(currentIndex, false);
     }
 
-    // 2. 渲染 UI 歌曲列表
+    // 2. 渲染 UI 清單
     function renderPlaylist() {
       playlistView.innerHTML = '';
       playlist.forEach((filePath, index) => {
         const li = document.createElement('li');
-        // 解碼顯示乾淨的歌名（去除 songs/ 與 .mp3）
         const rawFileName = filePath.replace(/^songs\//, '').replace(/\.mp3$/i, '');
         li.innerText = `${index + 1}. ${decodeURIComponent(rawFileName)}`;
         
         if (index === currentIndex) li.classList.add('active');
 
         li.addEventListener('click', () => {
-          playTrack(index);
+          currentIndex = index;
+          loadTrack(currentIndex, true);
         });
         playlistView.appendChild(li);
       });
     }
 
-    // 3. 核心播放邏輯（含 encodeURI 轉碼與加載修復）
-    function playTrack(index) {
+    // 3. 載入與播放邏輯
+    function loadTrack(index, shouldPlay = true) {
       if (index < 0 || index >= playlist.length) return;
       
-      currentIndex = index;
-      const rawPath = playlist[currentIndex];
-
-      // 【關鍵點 1】轉化為 URL 安全編碼，解決 GitHub Pages 中文 404 問題
-      const safeSrc = encodeURI(rawPath);
+      const rawPath = playlist[index];
+      audio.src = encodeURI(rawPath); // UTF-8 中文網址編碼
       
-      audio.src = safeSrc;
-      
-      // 更新顯示歌名
       const displayTitle = rawPath.replace(/^songs\//, '').replace(/\.mp3$/i, '');
-      trackTitle.innerText = `▶️ ${decodeURIComponent(displayTitle)}`;
+      trackTitle.innerText = decodeURIComponent(displayTitle);
 
-      // 更新列表高亮
       document.querySelectorAll('#playlistView li').forEach((el, i) => {
-        el.classList.toggle('active', i === currentIndex);
+        el.classList.toggle('active', i === index);
       });
 
-      // 【關鍵點 2】強制加載與播放（符合手機瀏覽器安全規範）
       audio.load();
+      if (shouldPlay) {
+        playAudio();
+      } else {
+        playPauseBtn.innerText = '▶️';
+      }
+    }
+
+    function playAudio() {
       const playPromise = audio.play();
-      
       if (playPromise !== undefined) {
-        playPromise.catch(error => {
-          console.error("播放失敗或被手機限制攔截:", error);
+        playPromise.then(() => {
+          playPauseBtn.innerText = '⏸️';
+        }).catch(err => {
+          console.error("播放受阻或出錯:", err);
+          playPauseBtn.innerText = '▶️';
         });
       }
     }
 
-    // 4. 自動播放下一首
-    audio.addEventListener('ended', () => {
-      let nextIndex = currentIndex + 1;
-      if (nextIndex >= playlist.length) nextIndex = 0; // 播完回到第一首
-      playTrack(nextIndex);
+    function pauseAudio() {
+      audio.pause();
+      playPauseBtn.innerText = '▶️';
+    }
+
+    // 4. 上一手 / 下一手控制
+    function playNext() {
+      if (isShuffle) {
+        let randomIndex;
+        do {
+          randomIndex = Math.floor(Math.random() * playlist.length);
+        } while (playlist.length > 1 && randomIndex === currentIndex);
+        currentIndex = randomIndex;
+      } else {
+        currentIndex = (currentIndex + 1) % playlist.length;
+      }
+      loadTrack(currentIndex, true);
+    }
+
+    function playPrev() {
+      if (isShuffle) {
+        currentIndex = Math.floor(Math.random() * playlist.length);
+      } else {
+        currentIndex = (currentIndex - 1 + playlist.length) % playlist.length;
+      }
+      loadTrack(currentIndex, true);
+    }
+
+    // 5. 事件綁定
+    playPauseBtn.addEventListener('click', () => {
+      if (audio.paused) {
+        playAudio();
+      } else {
+        pauseAudio();
+      }
     });
+
+    nextBtn.addEventListener('click', playNext);
+    prevBtn.addEventListener('click', playPrev);
+
+    // 隨機播放開關
+    shuffleBtn.addEventListener('click', () => {
+      isShuffle = !isShuffle;
+      shuffleBtn.classList.toggle('active', isShuffle);
+    });
+
+    // 循環模式切換 (歌單循環 🔁 -> 單曲循環 🔂 -> 關閉 ➡️)
+    repeatBtn.addEventListener('click', () => {
+      repeatMode = (repeatMode + 1) % 3;
+      if (repeatMode === 0) {
+        repeatBtn.innerText = '🔁';
+        repeatBtn.classList.remove('active');
+        repeatBtn.title = "歌單循環";
+      } else if (repeatMode === 1) {
+        repeatBtn.innerText = '🔂';
+        repeatBtn.classList.add('active');
+        repeatBtn.title = "單曲循環";
+      } else {
+        repeatBtn.innerText = '➡️';
+        repeatBtn.classList.remove('active');
+        repeatBtn.title = "不循環";
+      }
+    });
+
+    // 6. 音樂播放結束處置
+    audio.addEventListener('ended', () => {
+      if (repeatMode === 1) {
+        // 單曲循環
+        loadTrack(currentIndex, true);
+      } else if (repeatMode === 0 || isShuffle || currentIndex < playlist.length - 1) {
+        // 歌單循環 或 隨機 或 未到最後一首
+        playNext();
+      } else {
+        // 不循環且播到最後一首
+        pauseAudio();
+      }
+    });
+
+    // 7. 進度條更新與控制
+    audio.addEventListener('timeupdate', () => {
+      if (!isNaN(audio.duration) && audio.duration > 0) {
+        const progressPercent = (audio.currentTime / audio.duration) * 100;
+        progressBar.value = progressPercent;
+        currentTimeEl.innerText = formatTime(audio.currentTime);
+        durationTimeEl.innerText = formatTime(audio.duration);
+      }
+    });
+
+    progressBar.addEventListener('input', () => {
+      if (!isNaN(audio.duration)) {
+        const seekTime = (progressBar.value / 100) * audio.duration;
+        audio.currentTime = seekTime;
+      }
+    });
+
+    function formatTime(seconds) {
+      const min = Math.floor(seconds / 60);
+      const sec = Math.floor(seconds % 60);
+      return `${min}:${sec < 10 ? '0' : ''}${sec}`;
+    }
   </script>
 </body>
 </html>
