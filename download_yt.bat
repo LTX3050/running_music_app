@@ -4,7 +4,7 @@ title YouTube Downloader & 165 BPM Converter
 :LOOP
 cls
 echo ===================================================
-echo    YouTube Running Music Downloader (165 BPM)
+echo     YouTube Running Music Downloader (165 BPM)
 echo ===================================================
 echo.
 echo [Step 1] Please enter URL and BPM in the popup window...
@@ -75,10 +75,10 @@ echo strTempo = Replace(CStr(tempo^), ",", "."^)
 echo Set fso = CreateObject("Scripting.FileSystemObject"^)
 echo Set folder = fso.GetFolder("temp_download"^)
 echo For Each file In folder.Files
-echo   If LCase(fso.GetExtensionName(file.Name^)^) = "mp3" Then
-echo     cmd = "ffmpeg.exe -y -i """ ^& file.Path ^& """ -filter:a ""atempo=" ^& strTempo ^& """ -vn ""songs\" ^& file.Name ^& """"
-echo     wshShell.Run cmd, 1, True
-echo   End If
+echo    If LCase(fso.GetExtensionName(file.Name^)^) = "mp3" Then
+echo      cmd = "ffmpeg.exe -y -i """ ^& file.Path ^& """ -filter:a ""atempo=" ^& strTempo ^& """ -vn ""songs\" ^& file.Name ^& """"
+echo      wshShell.Run cmd, 1, True
+echo    End If
 echo Next
 ) > run_convert.vbs
 
@@ -92,17 +92,13 @@ echo Conversion finished!
 if exist temp_download rmdir /s /q temp_download
 
 echo.
-echo [4/4] Updating playlist.js...
+echo [4/4] Updating playlist.js (UTF-8 Encoded)...
 
-echo const playlist = [ > playlist.js
-for %%f in (songs\*.mp3) do (
-    echo   "songs/%%~nxf", >> playlist.js
-)
-echo ]; >> playlist.js
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$files = Get-ChildItem -Path 'songs/*.mp3' | ForEach-Object { '  \"songs/' + $_.Name + '\",' }; $content = 'const playlist = [' + [Environment]::NewLine + ($files -join [Environment]::NewLine) + [Environment]::NewLine + '];'; [System.IO.File]::WriteAllText('playlist.js', $content, [System.Text.Encoding]::UTF8)"
 
 echo.
 echo ===================================================
-echo ✅ Done with this song!
+echo ✅ Done! playlist.js updated with clean UTF-8!
 echo ===================================================
 echo.
 pause
