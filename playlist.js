@@ -76,6 +76,7 @@
   "songs/[Phigros] JunXion Between Life And Death(VIP Mix) - 1N6Fs【音源】 【高音質】.mp3",
   "songs/[Phigros] PTB10 - modulus.mp3",
   "songs/[東方vocal] Prominence [SoundOnline].mp3",
+  "songs/【Arcaea】rejection & Supire feat. Eili - Riven Pilgrimage【Official】.mp3",
   "songs/【BMS】 ★LittlE HearTs★ 【音源】.mp3",
   "songs/【BMS】真・千年女王⧸Shiraishi【BGM】.mp3",
   "songs/【BOF2012】 HAELEQUIN 【BGA】.mp3",
